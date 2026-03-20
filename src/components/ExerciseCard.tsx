@@ -1,9 +1,9 @@
-import type { Exercise } from '../types';
+import type { Exercise, SessionSet } from '../types';
+import { SetTracker } from './SetTracker';
 
-function formatWeight(weight: number | null, unit: 'kg' | 'bw'): string {
+export function formatWeight(weight: number | null, unit: 'kg' | 'bw'): string {
   if (unit === 'bw') return 'BW';
   if (weight === null) return '–';
-  // Show decimal only if needed (e.g. 12.5 → "12,5")
   const formatted = weight % 1 === 0 ? String(weight) : weight.toFixed(1).replace('.', ',');
   return `${formatted} kg`;
 }
@@ -11,15 +11,41 @@ function formatWeight(weight: number | null, unit: 'kg' | 'bw'): string {
 interface ExerciseCardProps {
   exercise: Exercise;
   index: number;
+  // Session mode props (all optional — absent = plan view)
+  sessionActive?: boolean;
+  loggedSets?: SessionSet[];
+  isSkipped?: boolean;
+  isCompleted?: boolean;
+  onLogSet?: (setNumber: number, actualReps?: number, actualWeight?: number) => void;
+  onUndoSet?: (setNumber: number) => void;
+  onSkip?: () => void;
+  onUnskip?: () => void;
 }
 
-export function ExerciseCard({ exercise, index }: ExerciseCardProps) {
+export function ExerciseCard({
+  exercise,
+  index,
+  sessionActive = false,
+  loggedSets = [],
+  isSkipped = false,
+  isCompleted = false,
+  onLogSet,
+  onUndoSet,
+  onSkip,
+  onUnskip,
+}: ExerciseCardProps) {
   const hasSettings = exercise.settings.length > 0;
   const hasNotes = exercise.notes.length > 0;
 
+  const cardClasses = [
+    'relative rounded-[14px] border bg-card p-4 mb-3 overflow-hidden transition-opacity duration-300',
+    isSkipped ? 'opacity-40 border-card-border' : '',
+    isCompleted && !isSkipped ? 'border-green/30' : 'border-card-border',
+  ].join(' ');
+
   return (
-    <div className="relative rounded-[14px] border border-card-border bg-card p-4 mb-3 overflow-hidden">
-      {exercise.optional && (
+    <div className={cardClasses}>
+      {exercise.optional && !isSkipped && (
         <div className="absolute top-[10px] right-[-32px] bg-optional text-bg text-[0.58rem] font-bold uppercase tracking-wider py-[3px] px-[38px] rotate-[35deg] z-10">
           Optional
         </div>
@@ -27,11 +53,17 @@ export function ExerciseCard({ exercise, index }: ExerciseCardProps) {
 
       {/* Top row: number + name + badges */}
       <div className="flex items-start gap-2.5 mb-3">
-        <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-accent-dim text-accent font-mono font-bold text-xs flex items-center justify-center">
+        <div className={`flex-shrink-0 w-7 h-7 rounded-lg font-mono font-bold text-xs flex items-center justify-center ${
+          isCompleted && !isSkipped
+            ? 'bg-green/15 text-green'
+            : 'bg-accent-dim text-accent'
+        }`}>
           {index + 1}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-[1.05rem] leading-tight">{exercise.name}</div>
+          <div className={`font-bold text-[1.05rem] leading-tight ${isSkipped ? 'line-through' : ''}`}>
+            {exercise.name}
+          </div>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {exercise.muscleGroups.map((mg) => (
               <span
@@ -76,6 +108,38 @@ export function ExerciseCard({ exercise, index }: ExerciseCardProps) {
           </div>
         </div>
       )}
+
+      {/* Session mode: set tracker */}
+      {sessionActive && !isSkipped && onLogSet && onUndoSet && (
+        <SetTracker
+          exercise={exercise}
+          loggedSets={loggedSets}
+          onLogSet={onLogSet}
+          onUndoSet={onUndoSet}
+        />
+      )}
+
+      {/* Session mode: skip/unskip link */}
+      {sessionActive && !isCompleted && (
+        <div className="mt-3 text-center">
+          {isSkipped ? (
+            <button
+              onClick={onUnskip}
+              className="text-xs text-accent active:opacity-70 transition-opacity"
+            >
+              Wieder aufnehmen
+            </button>
+          ) : (
+            <button
+              onClick={onSkip}
+              className="text-xs text-text-dim active:opacity-70 transition-opacity"
+            >
+              Überspringen
+            </button>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }
