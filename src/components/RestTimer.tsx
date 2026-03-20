@@ -1,18 +1,25 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const REST_DURATION = 30; // seconds
 
 export function RestTimer({ onDismiss }: { onDismiss: () => void }) {
   const [remaining, setRemaining] = useState(REST_DURATION);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(0 as unknown as ReturnType<typeof setInterval>);
-  const hasPlayedRef = useRef(false);
+  // Create AudioContext immediately on mount (during user tap) so iOS unlocks it
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  try {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+  } catch {
+    // Audio not available
+  }
 
-  const playBeep = useCallback(() => {
-    if (hasPlayedRef.current) return;
-    hasPlayedRef.current = true;
-    try {
-      const ctx = new AudioContext();
-      // Two short gentle beeps
+  function playBeep() {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    // Resume in case it was suspended
+    ctx.resume().then(() => {
       [0, 0.15].forEach((offset) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -25,24 +32,30 @@ export function RestTimer({ onDismiss }: { onDismiss: () => void }) {
         osc.start(ctx.currentTime + offset);
         osc.stop(ctx.currentTime + offset + 0.12);
       });
-    } catch {
-      // Audio not available — fail silently
-    }
-  }, []);
+    });
+  }
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setRemaining((r) => {
         if (r <= 1) {
           clearInterval(intervalRef.current);
-          playBeep();
           return 0;
         }
         return r - 1;
       });
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [playBeep]);
+  }, []);
+
+  // Play beep when timer reaches 0
+  const hasPlayedRef = useRef(false);
+  useEffect(() => {
+    if (remaining === 0 && !hasPlayedRef.current) {
+      hasPlayedRef.current = true;
+      playBeep();
+    }
+  }, [remaining]);
 
   const progress = (REST_DURATION - remaining) / REST_DURATION;
 
