@@ -1,7 +1,7 @@
 {
-  "name": "gymtracker-init",
+  "name": "gymtracker",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",
     "react": "^19.2.4",

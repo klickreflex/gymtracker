@@ -105,6 +105,11 @@ export function SettingsView() {
           className="hidden"
         />
       </div>
+
+      {/* Version */}
+      <div className="text-center text-text-dim/40 text-xs mt-8">
+        GymTracker v{__APP_VERSION__}
+      </div>
     </div>
   );
 }
