@@ -138,11 +138,11 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
           {/* Weight */}
           <Field label="Gewicht">
             <div className="flex items-center gap-3">
-              <div className="flex rounded-lg border border-card-border overflow-hidden">
+              <div className="flex rounded-lg border border-card-border overflow-hidden flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setWeightUnit('kg')}
-                  className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`px-5 py-2 text-sm font-semibold transition-colors ${
                     weightUnit === 'kg' ? 'bg-accent text-bg' : 'bg-card text-text-dim'
                   }`}
                 >
@@ -151,7 +151,7 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
                 <button
                   type="button"
                   onClick={() => setWeightUnit('bw')}
-                  className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`px-5 py-2 text-sm font-semibold transition-colors ${
                     weightUnit === 'bw' ? 'bg-accent text-bg' : 'bg-card text-text-dim'
                   }`}
                 >

@@ -269,6 +269,25 @@ export function PlanView() {
         </button>
       )}
 
+      {/* Home screen install prompt — hidden in standalone mode */}
+      {!isActive && !window.matchMedia('(display-mode: standalone)').matches && (
+        <div className="rounded-[14px] border border-accent/30 bg-accent-dim p-4 mb-4">
+          <h2 className="text-sm font-semibold mb-1">Zum Home-Bildschirm hinzufügen</h2>
+          <p className="text-xs text-text-dim leading-relaxed mb-3">
+            Wähle im Teilen-Menü <strong>„Zum Home-Bildschirm"</strong>. Die App funktioniert dann offline und deine Daten bleiben dauerhaft gespeichert.
+          </p>
+          {'share' in navigator && (
+            <button
+              onClick={() => navigator.share({ title: 'GymTracker', url: window.location.origin })}
+              className="w-full py-2.5 rounded-xl bg-accent text-bg text-sm font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+              Teilen-Menü öffnen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Exercise cards */}
       <div className={isActive ? 'mt-3' : ''}>
         {exercises.map((exercise, i) => {
