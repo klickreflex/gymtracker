@@ -17,6 +17,13 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      // Restore route from 404.html redirect
+      (function() {
+        var p = new URLSearchParams(window.location.search).get('p');
+        if (p) window.history.replaceState(null, '', p);
+      })();
+    </script>
+    <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js');
