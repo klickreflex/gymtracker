@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymtracker-v1';
+const CACHE_NAME = 'gymtracker-v2';
 
 // Cache app shell on install
 self.addEventListener('install', (event) => {
@@ -10,7 +10,7 @@ self.addEventListener('install', (event) => {
       ])
     )
   );
-  self.skipWaiting();
+  // Don't skipWaiting — let the client decide when to activate
 });
 
 // Clean up old caches on activate
@@ -23,16 +23,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Cache-first for app shell, network-first for everything else
+// Listen for skip waiting message from client
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Stale-while-revalidate: serve from cache, update in background
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  // Skip non-GET and chrome-extension requests
   if (request.method !== 'GET' || request.url.startsWith('chrome-extension')) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetched = fetch(request).then((response) => {
-        // Cache successful responses
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
