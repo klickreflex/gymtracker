@@ -3,13 +3,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import type { Exercise, Session, SessionSet } from '../types';
 
-export type SessionPhase = 'idle' | 'active' | 'summary';
+export type SessionPhase = 'idle' | 'pendingResume' | 'active' | 'summary';
 
 export function useSession() {
   const [phase, setPhase] = useState<SessionPhase>('idle');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // Load active session on mount (survives page reload / screen-off)
+  // Detect interrupted session on mount
   useEffect(() => {
     db.sessions
       .filter((s) => s.completedAt === null)
@@ -17,7 +17,7 @@ export function useSession() {
       .then((s) => {
         if (s) {
           setSessionId(s.id);
-          setPhase('active');
+          setPhase('pendingResume');
         }
       });
   }, []);
@@ -26,6 +26,17 @@ export function useSession() {
     () => (sessionId ? db.sessions.get(sessionId) : undefined),
     [sessionId],
   );
+
+  const resumeSession = useCallback(() => {
+    setPhase('active');
+  }, []);
+
+  const discardSession = useCallback(async () => {
+    if (!sessionId) return;
+    await db.sessions.delete(sessionId);
+    setSessionId(null);
+    setPhase('idle');
+  }, [sessionId]);
 
   const startSession = useCallback(async () => {
     const id = crypto.randomUUID();
@@ -54,7 +65,6 @@ export function useSession() {
         completedAt: new Date().toISOString(),
         skipped: false,
       };
-      // Immediate write to DB — survives screen-off
       const current = await db.sessions.get(sessionId);
       if (current) {
         await db.sessions.update(sessionId, {
@@ -85,7 +95,6 @@ export function useSession() {
       if (!sessionId) return;
       const current = await db.sessions.get(sessionId);
       if (!current) return;
-      // Add skipped sets for all planned sets
       const skippedSets: SessionSet[] = [];
       for (let i = 1; i <= exercise.defaultSets; i++) {
         const alreadyLogged = current.sets.some(
@@ -153,6 +162,8 @@ export function useSession() {
     phase,
     session,
     startSession,
+    resumeSession,
+    discardSession,
     logSet,
     undoSet,
     skipExercise,

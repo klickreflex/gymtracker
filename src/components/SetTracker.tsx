@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Exercise, SessionSet } from '../types';
 import { DeviationEditor } from './DeviationEditor';
+import { RestTimer } from './RestTimer';
 
 interface SetTrackerProps {
   exercise: Exercise;
@@ -11,6 +12,7 @@ interface SetTrackerProps {
 
 export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTrackerProps) {
   const [editingSet, setEditingSet] = useState<number | null>(null);
+  const [showRestTimer, setShowRestTimer] = useState(false);
 
   function handleTap(setNumber: number) {
     const existing = loggedSets.find((s) => s.setNumber === setNumber && !s.skipped);
@@ -22,6 +24,11 @@ export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTra
     // Quick confirm with planned values
     onLogSet(setNumber);
     triggerHaptic();
+    // Show rest timer if there are more sets to do
+    const doneAfter = loggedSets.filter((s) => !s.skipped).length + 1;
+    if (doneAfter < exercise.defaultSets) {
+      setShowRestTimer(true);
+    }
   }
 
   function handleLongPress(setNumber: number) {
@@ -34,6 +41,10 @@ export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTra
     onLogSet(setNumber, reps, weight ?? undefined);
     setEditingSet(null);
     triggerHaptic();
+    const doneAfter = loggedSets.filter((s) => !s.skipped).length + 1;
+    if (doneAfter < exercise.defaultSets) {
+      setShowRestTimer(true);
+    }
   }
 
   const completedCount = loggedSets.filter((s) => !s.skipped).length;
@@ -76,6 +87,10 @@ export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTra
           onConfirm={(reps, weight) => handleDeviationConfirm(editingSet, reps, weight)}
           onCancel={() => setEditingSet(null)}
         />
+      )}
+
+      {showRestTimer && !allDone && editingSet === null && (
+        <RestTimer onDismiss={() => setShowRestTimer(false)} />
       )}
     </div>
   );

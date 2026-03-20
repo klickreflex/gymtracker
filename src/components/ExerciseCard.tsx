@@ -11,6 +11,7 @@ export function formatWeight(weight: number | null, unit: 'kg' | 'bw'): string {
 interface ExerciseCardProps {
   exercise: Exercise;
   index: number;
+  totalCount?: number;
   // Session mode props (all optional — absent = plan view)
   sessionActive?: boolean;
   loggedSets?: SessionSet[];
@@ -20,11 +21,16 @@ interface ExerciseCardProps {
   onUndoSet?: (setNumber: number) => void;
   onSkip?: () => void;
   onUnskip?: () => void;
+  // Plan management props
+  onEdit?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export function ExerciseCard({
   exercise,
   index,
+  totalCount = 0,
   sessionActive = false,
   loggedSets = [],
   isSkipped = false,
@@ -33,6 +39,9 @@ export function ExerciseCard({
   onUndoSet,
   onSkip,
   onUnskip,
+  onEdit,
+  onMoveUp,
+  onMoveDown,
 }: ExerciseCardProps) {
   const hasSettings = exercise.settings.length > 0;
   const hasNotes = exercise.notes.length > 0;
@@ -137,6 +146,46 @@ export function ExerciseCard({
               Überspringen
             </button>
           )}
+        </div>
+      )}
+
+      {/* Plan mode: edit button */}
+      {!sessionActive && onEdit && (
+        <div className="mt-3 pt-3 border-t border-card-border">
+          <button
+            onClick={onEdit}
+            className="text-xs text-text-dim flex items-center gap-1 active:text-accent transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Bearbeiten
+          </button>
+        </div>
+      )}
+
+      {/* Reorder mode: move up/down buttons */}
+      {!sessionActive && (onMoveUp || onMoveDown) && (
+        <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-card-border">
+          <button
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-text-dim disabled:opacity-20 active:text-accent active:bg-tag-bg transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={index === totalCount - 1}
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-text-dim disabled:opacity-20 active:text-accent active:bg-tag-bg transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </div>
       )}
 

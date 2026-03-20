@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { BottomNav } from './components/BottomNav';
 import { PlanView } from './views/PlanView';
+import { HistoryView } from './views/HistoryView';
+import { ProgressView } from './views/ProgressView';
 import { SettingsView } from './views/SettingsView';
 
 export default function App() {
@@ -9,6 +11,8 @@ export default function App() {
       <div className="max-w-[480px] mx-auto px-4 pb-24 min-h-screen">
         <Routes>
           <Route path="/" element={<PlanView />} />
+          <Route path="/history" element={<HistoryView />} />
+          <Route path="/progress" element={<ProgressView />} />
           <Route path="/settings" element={<SettingsView />} />
         </Routes>
       </div>
