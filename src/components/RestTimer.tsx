@@ -48,14 +48,16 @@ export function RestTimer({ onDismiss }: { onDismiss: () => void }) {
     return () => clearInterval(intervalRef.current);
   }, []);
 
-  // Play beep when timer reaches 0
+  // Play beep and auto-dismiss when timer reaches 0
   const hasPlayedRef = useRef(false);
   useEffect(() => {
     if (remaining === 0 && !hasPlayedRef.current) {
       hasPlayedRef.current = true;
       playBeep();
+      // Auto-dismiss after a short delay so the beep is heard
+      setTimeout(onDismiss, 1500);
     }
-  }, [remaining]);
+  }, [remaining, onDismiss]);
 
   const progress = (REST_DURATION - remaining) / REST_DURATION;
 
@@ -86,12 +88,14 @@ export function RestTimer({ onDismiss }: { onDismiss: () => void }) {
         </span>
       </div>
 
-      <button
-        onClick={onDismiss}
-        className="text-xs text-text-dim px-2 py-1 rounded-lg active:text-accent transition-colors"
-      >
-        {remaining > 0 ? 'Skip' : 'OK'}
-      </button>
+      {remaining > 0 && (
+        <button
+          onClick={onDismiss}
+          className="text-xs text-text-dim px-2 py-1 rounded-lg active:text-accent transition-colors"
+        >
+          Skip
+        </button>
+      )}
     </div>
   );
 }

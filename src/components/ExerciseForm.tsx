@@ -162,7 +162,7 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
                 <input
                   type="number"
                   inputMode="decimal"
-                  step="2.5"
+                  step="0.5"
                   value={defaultWeight}
                   onChange={(e) => setDefaultWeight(parseFloat(e.target.value) || 0)}
                   min={0}

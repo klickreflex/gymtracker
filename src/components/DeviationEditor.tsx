@@ -40,19 +40,19 @@ export function DeviationEditor({ exercise, setNumber, onConfirm, onCancel }: De
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-text-dim">Gewicht</span>
           <div className="flex items-center gap-2">
-            <StepperButton label="−" onClick={() => setWeight((w) => Math.max(0, (w ?? 0) - 2.5))} />
+            <StepperButton label="−" onClick={() => setWeight((w) => Math.max(0, (w ?? 0) - 1))} />
             <div className="flex items-center gap-1">
               <input
                 type="number"
                 inputMode="decimal"
-                step="2.5"
+                step="0.5"
                 value={weight}
                 onChange={(e) => setWeight(Math.max(0, parseFloat(e.target.value) || 0))}
                 className="w-16 text-center font-mono font-bold text-lg bg-card border border-card-border rounded-lg py-1.5 text-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span className="text-sm text-text-dim">kg</span>
             </div>
-            <StepperButton label="+" onClick={() => setWeight((w) => (w ?? 0) + 2.5)} />
+            <StepperButton label="+" onClick={() => setWeight((w) => (w ?? 0) + 1)} />
           </div>
         </div>
       )}

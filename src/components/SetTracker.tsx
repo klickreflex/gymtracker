@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Exercise, SessionSet } from '../types';
 import { DeviationEditor } from './DeviationEditor';
 import { RestTimer } from './RestTimer';
@@ -13,18 +13,27 @@ interface SetTrackerProps {
 export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTrackerProps) {
   const [editingSet, setEditingSet] = useState<number | null>(null);
   const [showRestTimer, setShowRestTimer] = useState(false);
+  const pendingTimerRef = useRef(false);
+
+  const completedCount = loggedSets.filter((s) => !s.skipped).length;
+  const allDone = completedCount >= exercise.defaultSets;
+
+  // Show rest timer after deviation editor closes
+  useEffect(() => {
+    if (pendingTimerRef.current && editingSet === null && !allDone) {
+      pendingTimerRef.current = false;
+      setShowRestTimer(true);
+    }
+  }, [editingSet, allDone]);
 
   function handleTap(setNumber: number) {
     const existing = loggedSets.find((s) => s.setNumber === setNumber && !s.skipped);
     if (existing) {
-      // Undo completed set
       onUndoSet(setNumber);
       return;
     }
-    // Quick confirm with planned values
     onLogSet(setNumber);
     triggerHaptic();
-    // Show rest timer if there are more sets to do
     const doneAfter = loggedSets.filter((s) => !s.skipped).length + 1;
     if (doneAfter < exercise.defaultSets) {
       setShowRestTimer(true);
@@ -33,22 +42,20 @@ export function SetTracker({ exercise, loggedSets, onLogSet, onUndoSet }: SetTra
 
   function handleLongPress(setNumber: number) {
     const existing = loggedSets.find((s) => s.setNumber === setNumber && !s.skipped);
-    if (existing) return; // Can't edit already completed set
+    if (existing) return;
     setEditingSet(setNumber);
   }
 
   function handleDeviationConfirm(setNumber: number, reps: number, weight: number | null) {
     onLogSet(setNumber, reps, weight ?? undefined);
-    setEditingSet(null);
     triggerHaptic();
+    // Schedule timer to show after editor closes
     const doneAfter = loggedSets.filter((s) => !s.skipped).length + 1;
     if (doneAfter < exercise.defaultSets) {
-      setShowRestTimer(true);
+      pendingTimerRef.current = true;
     }
+    setEditingSet(null);
   }
-
-  const completedCount = loggedSets.filter((s) => !s.skipped).length;
-  const allDone = completedCount >= exercise.defaultSets;
 
   return (
     <div className="mt-3">
