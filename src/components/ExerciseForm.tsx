@@ -28,7 +28,11 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
   const [defaultSets, setDefaultSets] = useState(initial?.defaultSets ?? 3);
   const [defaultReps, setDefaultReps] = useState(initial?.defaultReps ?? 15);
   const [weightUnit, setWeightUnit] = useState<'kg' | 'bw'>(initial?.weightUnit ?? 'kg');
-  const [defaultWeight, setDefaultWeight] = useState(initial?.defaultWeight ?? 0);
+  const [defaultWeightStr, setDefaultWeightStr] = useState(
+    initial?.defaultWeight !== null && initial?.defaultWeight !== undefined
+      ? (initial.defaultWeight % 1 === 0 ? String(initial.defaultWeight) : initial.defaultWeight.toFixed(1).replace('.', ','))
+      : '0'
+  );
   const [settings, setSettings] = useState<ExerciseSetting[]>(initial?.settings ?? []);
   const [optional, setOptional] = useState(initial?.optional ?? false);
   const [notes, setNotes] = useState(initial?.notes ?? '');
@@ -43,7 +47,7 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
       deviceNumber,
       defaultSets,
       defaultReps,
-      defaultWeight: weightUnit === 'bw' ? null : defaultWeight,
+      defaultWeight: weightUnit === 'bw' ? null : parseFloat(defaultWeightStr.replace(',', '.')) || 0,
       weightUnit,
       settings,
       optional,
@@ -160,12 +164,10 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
               </div>
               {weightUnit === 'kg' && (
                 <input
-                  type="number"
+                  type="text"
                   inputMode="decimal"
-                  step="0.5"
-                  value={defaultWeight}
-                  onChange={(e) => setDefaultWeight(parseFloat(e.target.value) || 0)}
-                  min={0}
+                  value={defaultWeightStr}
+                  onChange={(e) => setDefaultWeightStr(e.target.value)}
                   className="input-field w-28"
                 />
               )}
