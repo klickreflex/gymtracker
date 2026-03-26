@@ -182,14 +182,14 @@ export function ExerciseForm({ initial, onSave, onCancel, onDelete }: ExerciseFo
                     value={s.label}
                     onChange={(e) => updateSetting(i, 'label', e.target.value)}
                     placeholder="z.B. Sitz"
-                    className="input-field w-24 flex-shrink-0"
+                    className="input-field flex-[1_1_70%]"
                   />
                   <input
                     type="text"
                     value={s.value}
                     onChange={(e) => updateSetting(i, 'value', e.target.value)}
                     placeholder="z.B. 3"
-                    className="input-field flex-1"
+                    className="input-field flex-[1_1_30%]"
                   />
                   <button
                     type="button"
