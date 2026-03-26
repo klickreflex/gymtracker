@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import type { Exercise } from '../types';
 
+function parseDecimal(value: string): number {
+  // Accept both comma and dot as decimal separator
+  return parseFloat(value.replace(',', '.')) || 0;
+}
+
+function formatDecimal(value: number): string {
+  // Display with comma for German locale
+  return value % 1 === 0 ? String(value) : value.toFixed(1).replace('.', ',');
+}
+
 interface DeviationEditorProps {
   exercise: Exercise;
   setNumber: number;
@@ -10,8 +20,11 @@ interface DeviationEditorProps {
 
 export function DeviationEditor({ exercise, setNumber, onConfirm, onCancel }: DeviationEditorProps) {
   const [reps, setReps] = useState(exercise.defaultReps);
-  const [weight, setWeight] = useState(exercise.defaultWeight);
+  const [weightStr, setWeightStr] = useState(
+    exercise.defaultWeight !== null ? formatDecimal(exercise.defaultWeight) : '0'
+  );
   const isBW = exercise.weightUnit === 'bw';
+  const weightNum = parseDecimal(weightStr);
 
   return (
     <div className="mt-3 p-3 rounded-xl bg-bg border border-card-border">
@@ -36,23 +49,22 @@ export function DeviationEditor({ exercise, setNumber, onConfirm, onCancel }: De
       </div>
 
       {/* Weight stepper (only for non-bodyweight exercises) */}
-      {!isBW && weight !== null && (
+      {!isBW && (
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-text-dim">Gewicht</span>
           <div className="flex items-center gap-2">
-            <StepperButton label="−" onClick={() => setWeight((w) => Math.max(0, (w ?? 0) - 1))} />
+            <StepperButton label="−" onClick={() => setWeightStr(formatDecimal(Math.max(0, weightNum - 1)))} />
             <div className="flex items-center gap-1">
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                step="0.5"
-                value={weight}
-                onChange={(e) => setWeight(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-16 text-center font-mono font-bold text-lg bg-card border border-card-border rounded-lg py-1.5 text-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                value={weightStr}
+                onChange={(e) => setWeightStr(e.target.value)}
+                className="w-16 text-center font-mono font-bold text-lg bg-card border border-card-border rounded-lg py-1.5 text-accent"
               />
               <span className="text-sm text-text-dim">kg</span>
             </div>
-            <StepperButton label="+" onClick={() => setWeight((w) => (w ?? 0) + 1)} />
+            <StepperButton label="+" onClick={() => setWeightStr(formatDecimal(weightNum + 1))} />
           </div>
         </div>
       )}
@@ -66,7 +78,7 @@ export function DeviationEditor({ exercise, setNumber, onConfirm, onCancel }: De
           Abbrechen
         </button>
         <button
-          onClick={() => onConfirm(reps, weight)}
+          onClick={() => onConfirm(reps, isBW ? null : weightNum)}
           className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-accent text-bg active:scale-[0.98] transition-transform"
         >
           Speichern

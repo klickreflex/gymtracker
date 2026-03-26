@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymtracker-v2';
+const CACHE_NAME = 'gymtracker-v3';
 
 // Cache app shell on install
 self.addEventListener('install', (event) => {
