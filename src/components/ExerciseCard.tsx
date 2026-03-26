@@ -4,8 +4,11 @@ import { SetTracker } from './SetTracker';
 export function formatWeight(weight: number | null, unit: 'kg' | 'bw'): string {
   if (unit === 'bw') return 'BW';
   if (weight === null) return '–';
-  const formatted = weight % 1 === 0 ? String(weight) : weight.toFixed(1).replace('.', ',');
-  return `${formatted} kg`;
+  return weight % 1 === 0 ? String(weight) : weight.toFixed(1).replace('.', ',');
+}
+
+function formatWeightUnit(unit: 'kg' | 'bw'): string | null {
+  return unit === 'kg' ? 'kg' : null;
 }
 
 interface ExerciseCardProps {
@@ -93,6 +96,7 @@ export function ExerciseCard({
         <Stat
           label="Gewicht"
           value={formatWeight(exercise.defaultWeight, exercise.weightUnit)}
+          unit={formatWeightUnit(exercise.weightUnit)}
           highlight
         />
         <Stat label="Gerät" value={String(exercise.deviceNumber)} />
@@ -193,12 +197,12 @@ export function ExerciseCard({
   );
 }
 
-function Stat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function Stat({ label, value, unit, highlight = false }: { label: string; value: string; unit?: string | null; highlight?: boolean }) {
   return (
     <div className="flex flex-col bg-bg rounded-[10px] px-3 py-2.5 min-w-[72px] flex-1">
       <span className="text-[0.65rem] text-text-dim uppercase tracking-wider mb-0.5">{label}</span>
       <span className={`font-mono font-bold text-[1.1rem] ${highlight ? 'text-accent' : 'text-text'}`}>
-        {value}
+        {value}{unit && <span className="text-[0.55rem] font-semibold ml-0.5">{unit}</span>}
       </span>
     </div>
   );
